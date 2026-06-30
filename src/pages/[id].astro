@@ -1,0 +1,50 @@
+---
+import { createClient } from "@supabase/supabase-js";
+import type { GetStaticPathsResult } from "astro";
+
+export async function getStaticPaths(): Promise<GetStaticPathsResult> {
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { data: products } = await supabase.from("products").select("id");
+
+  return (
+    products?.map((product) => ({
+      params: { id: String(product.id) },
+    })) ?? []
+  );
+}
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const { id } = Astro.params;
+const { data: product } = await supabase
+  .from("products")
+  .select("*")
+  .eq("id", Number(id))
+  .single();
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{product?.name ?? "Not Found"} - Jamstack PoC</title>
+  </head>
+  <body>
+    <a href="/">&larr; Back to catalog</a>
+    {product ? (
+      <div class="product-detail">
+        <h1>{product.name}</h1>
+        <p>{product.description}</p>
+        <p>Price: ${Number(product.price).toFixed(2)}</p>
+        {product.image_url && <img src={product.image_url} alt={product.name} />}
+      </div>
+    ) : (
+      <h1>Product not found</h1>
+    )}
+  </body>
+</html>

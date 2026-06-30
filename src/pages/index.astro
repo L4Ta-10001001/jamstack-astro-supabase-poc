@@ -1,0 +1,33 @@
+---
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const { data: products } = await supabase.from("products").select("*");
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product Catalog - Jamstack PoC</title>
+  </head>
+  <body>
+    <h1>Product Catalog</h1>
+    <p>Static site generated at build time from Supabase.</p>
+    <div class="products">
+      {
+        products?.map((product) => (
+          <div class="product">
+            <h2>{product.name}</h2>
+            <p>{product.description}</p>
+            <p>Price: ${Number(product.price).toFixed(2)}</p>
+            {product.image_url && <img src={product.image_url} alt={product.name} />}
+          </div>
+        ))
+      }
+    </div>
+  </body>
+</html>
